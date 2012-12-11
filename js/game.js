@@ -1,6 +1,6 @@
 function Tileset(tilesetImage, tileSize) {
-    var tilesetWidth = (tilesetImage.width/tileSize);
-    var tilesetHeight = (tilesetImage.height/tileSize);
+    var tilesetWidth = (tilesetImage.width/(tileSize+1)); //number of tiles wide
+    var tilesetHeight = (tilesetImage.height/(tileSize+1)); //number of tiles high
 
     var tileCount = tilesetWidth * tilesetHeight;
 
@@ -114,27 +114,27 @@ function Game(viewportCanvas) {
         height,
         centerTile
     ) {
-        for (var mapX=x; mapX<x+width; mapX++) {
+        for (var mapX=x; mapX<x+width; mapX++) { // draw the entire box with center tiles
             for (var mapY=y; mapY<y+height; mapY++) {
                 mapData[mapX][mapY] = centerTile;
             }
         }
 
-        for (var mapX=x; mapX<x+width; mapX++) {
-            mapData[mapX][y] = centerTile - 18;
-            mapData[mapX][y+height] = centerTile + 18;
+        for (var mapX=x; mapX<x+width; mapX++) { // draw the top and bottom edges
+            mapData[mapX][y] = centerTile - 17;
+            mapData[mapX][y+height] = centerTile + 17;
         }
 
 
-        for (var mapY=y; mapY<y+height; mapY++) {
+        for (var mapY=y; mapY<y+height; mapY++) { //draw the left and right edges
             mapData[x][mapY] = centerTile - 1;
             mapData[x+width][mapY] = centerTile + 1;
         }
 
-        mapData[x][y] = centerTile - 19; // Top Left
-        mapData[x+width][y] = centerTile - 17; // Top Right
-        mapData[x+width][y+height] = centerTile + 19; // Bottom Right
-        mapData[x][y+height] = centerTile + 17; // Bottom Left
+        mapData[x][y] = centerTile - 18; // Top Left
+        mapData[x+width][y] = centerTile - 16; // Top Right
+        mapData[x+width][y+height] = centerTile + 18; // Bottom Right
+        mapData[x][y+height] = centerTile + 16; // Bottom Left
     }
 
     function setup() {
@@ -147,17 +147,69 @@ function Game(viewportCanvas) {
             webkitRequestAnimationFrame(doFrame);
         }
 
-        initMap(100, 40, 27);
+        initMap(100, 40, 26);
 
-        for (var i=0; i<10; i++) {
+        for (var i=0; i<4; i++) {
             drawBox(
                 parseInt(Math.random() * 90),
                 parseInt(Math.random() * 30),
                 2+parseInt(Math.random() * 8),
                 2+parseInt(Math.random() * 8),
-                31
+                30
             );
         }
+
+        for (var i=0; i<4; i++) {
+            drawBox(
+                parseInt(Math.random() * 90),
+                parseInt(Math.random() * 30),
+                2+parseInt(Math.random() * 8),
+                2+parseInt(Math.random() * 8),
+                77
+            );
+        }
+
+        for (var i=0; i<4; i++) {
+            drawBox(
+                parseInt(Math.random() * 90),
+                parseInt(Math.random() * 30),
+                2+parseInt(Math.random() * 8),
+                2+parseInt(Math.random() * 8),
+                81
+            );
+        }
+
+        var charlocX = 3; //define initial character position
+        var charlocY = 3;
+
+        mapData[charlocX][charlocY] = 283; // write initial character position
+
+        $(document).ready(function() {
+            $(document).keydown(function(key) {
+                switch(parseInt(key.which,10)) {
+                    case 65: //move left
+                        charlocX -= 1;
+                        mapData[charlocX][charlocY] = 283; // update position
+                        mapData[charlocX+1][charlocY] = 26;
+                        break;
+                    case 83: //move down
+                        charlocY += 1;
+                        mapData[charlocX][charlocY] = 283; // update position
+                        mapData[charlocX][charlocY-1] = 26;
+                        break;
+                    case 87: //move up
+                        charlocY -= 1;
+                        mapData[charlocX][charlocY] = 283; // update position
+                        mapData[charlocX][charlocY+1] = 26;
+                        break;
+                    case 68: //move right
+                        charlocX += 1;
+                        mapData[charlocX][charlocY] = 283; // update position
+                        mapData[charlocX-1][charlocY] = 26;
+                        break;
+                }
+            });
+        });
 
         // Wait till the tileset is loaded to start the game
         var tilesetImage = new Image();
