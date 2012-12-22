@@ -179,8 +179,18 @@ function Game(viewportCanvas) {
             );
         }
 
-        var charlocX = 3; //define initial character position
-        var charlocY = 3;
+        function isPassable(block) {
+            if (block == 26) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+
+        var charlocX = 1; //define initial character position
+        var charlocY = 1;
+        var currTile = 26; //keep track of which tile the character is "on top of"
 
         mapData[charlocX][charlocY] = 283; // write initial character position
 
@@ -188,24 +198,36 @@ function Game(viewportCanvas) {
             $(document).keydown(function(key) {
                 switch(parseInt(key.which,10)) {
                     case 65: //move left
-                        charlocX -= 1;
-                        mapData[charlocX][charlocY] = 283; // update position
-                        mapData[charlocX+1][charlocY] = 26;
+                        if (isPassable(mapData[charlocX-1][charlocY])) {
+                            charlocX -= 1;
+                            mapData[charlocX+1][charlocY] = currTile;
+                            currTile = mapData[charlocX][charlocY];
+                            mapData[charlocX][charlocY] = 283; // update position
+                        }
                         break;
                     case 83: //move down
-                        charlocY += 1;
-                        mapData[charlocX][charlocY] = 283; // update position
-                        mapData[charlocX][charlocY-1] = 26;
+                        if (isPassable(mapData[charlocX][charlocY+1])) {
+                            charlocY += 1;
+                            mapData[charlocX][charlocY-1] = currTile;
+                            currTile = mapData[charlocX][charlocY];
+                            mapData[charlocX][charlocY] = 283; // update position
+                        }
                         break;
                     case 87: //move up
-                        charlocY -= 1;
-                        mapData[charlocX][charlocY] = 283; // update position
-                        mapData[charlocX][charlocY+1] = 26;
+                        if (isPassable(mapData[charlocX][charlocY-1])) {
+                            charlocY -= 1;
+                            mapData[charlocX][charlocY+1] = currTile;
+                            currTile = mapData[charlocX][charlocY];
+                            mapData[charlocX][charlocY] = 283; // update position
+                        }
                         break;
                     case 68: //move right
-                        charlocX += 1;
-                        mapData[charlocX][charlocY] = 283; // update position
-                        mapData[charlocX-1][charlocY] = 26;
+                        if (isPassable(mapData[charlocX+1][charlocY])) {
+                            charlocX += 1;
+                            mapData[charlocX-1][charlocY] = currTile;
+                            currTile = mapData[charlocX][charlocY];
+                            mapData[charlocX][charlocY] = 283; // update position
+                        }
                         break;
                 }
             });
