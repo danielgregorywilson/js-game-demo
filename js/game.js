@@ -1,6 +1,6 @@
 function Tileset(tilesetImage, tileSize) {
-    var tilesetWidth = (tilesetImage.width/(tileSize+1)); //number of tiles wide
     var tilesetHeight = (tilesetImage.height/(tileSize+1)); //number of tiles high
+    var tilesetWidth = (tilesetImage.width/(tileSize+1)); //number of tiles wide
 
     var tileCount = tilesetWidth * tilesetHeight;
 
@@ -33,7 +33,6 @@ function Tileset(tilesetImage, tileSize) {
         "drawTile" : drawTile
     };
 }
-
 
 function Game(viewportCanvas) {
     var TILE_SIZE = 16;
@@ -100,6 +99,11 @@ function Game(viewportCanvas) {
                 mapData[x][y] = defaultTile;
             }
         }
+
+        for (var x=0; x<width; x++) {
+            mapData[x][29] = 120;
+        }
+
     }
 
     function initViewport() {
@@ -149,6 +153,8 @@ function Game(viewportCanvas) {
 
         initMap(100, 40, 26);
 
+        spawnEnemy();
+
         for (var i=0; i<4; i++) {
             drawBox(
                 parseInt(Math.random() * 90),
@@ -188,13 +194,84 @@ function Game(viewportCanvas) {
             }
         }
 
+        function enemyNear() {
+            if (mapData[charlocX-1] == 281 || mapData[charlocX+1] == 281 || mapData[charlocY+1] == 281 || mapData[charlocY-1] == 281) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
         var charlocX = 1; //define initial character position
         var charlocY = 1;
         var currTile = 26; //keep track of which tile the character is "on top of"
 
+        var coinlocX = 0; //initialize coin position variables
+        var coinlocY = 0;
+        var coinCurrTile = 26; //keep track of which tile the coin is "on top of"
+
         mapData[charlocX][charlocY] = 283; // write initial character position
 
+        function spawnEnemy() {
+            var enemyLocX = parseInt(Math.random() * 90);
+            var enemyLocY = parseInt(Math.random() * 30);
+            mapData[enemyLocX][enemyLocY] = 281; // write initial enemy position
+        }
+
+        function moveEnemy() {
+            var direction = parseInt(Math.random() * 4);
+            mapData[enemyLocX][enemyLocY] = 26;
+            if (direction == 0) {
+                enemyLocX += 1;
+            } else if (direction == 1) {
+                enemyLocX -= 1;
+            } else if (direction == 2) {
+                enemyLocY += 1;
+            } else {
+                enemyLocY -= 1;
+            }
+            mapData[enemyLocX][enemyLocY] = 281
+        }
+
+        function gravity() {
+            if (isPassable(mapData[charlocX][charlocY+1])) {
+                charlocY += 1;
+                mapData[charlocX][charlocY-1] = currTile;
+                currTile = mapData[charlocX][charlocY];
+                mapData[charlocX][charlocY] = 283; // update position
+            }
+        }
+
+        function moveCoin() {    
+            if (coinlocX != 0) {
+                if (isPassable(mapData[coinlocX+1][coinlocY])) { // the coin passes through green (open) space
+                    coinlocX += 1;
+                    mapData[coinlocX-1][coinlocY] = coinCurrTile;
+                    mapData[coinlocX][coinlocY] = 156;
+                } else if (mapData[coinlocX+1][coinlocY] == 281) { // if coin hits enemy
+                    mapData[coinlocX+1][coinlocY] = 26;
+                    mapData[coinlocX][coinlocY] = 26;
+                } else { // if it hits anything else
+                    mapData[coinlocX][coinlocY] = 26;
+                }
+            }
+        }
+
         $(document).ready(function() {
+
+            setInterval(function(){
+                moveCoin();
+            },80);
+
+            setInterval(function(){
+                gravity();
+            },500);
+
+            setInterval(function(){
+                moveEnemy();
+                mapData[enemyLocX+1][enemyLocY] = 281;
+            },500);
+
             $(document).keydown(function(key) {
                 switch(parseInt(key.which,10)) {
                     case 65: //move left
@@ -229,8 +306,25 @@ function Game(viewportCanvas) {
                             mapData[charlocX][charlocY] = 283; // update position
                         }
                         break;
+                    case 32: //fire coin to the right
+                        if (isPassable(mapData[charlocX+1][charlocY])) {
+                            mapData[coinlocX][coinlocY] = 26;
+                            coinlocX = charlocX+1;
+                            coinlocY = charlocY;
+                            mapData[coinlocX][coinlocY] = 156;
+                        }
                 }
             });
+            
+            //death by enemy
+            $(function() {
+                if (enemyNear()) {
+                    mapData[charlocX][charlocY] == 284;
+                }
+            });
+
+            
+
         });
 
         // Wait till the tileset is loaded to start the game
@@ -248,5 +342,4 @@ function Game(viewportCanvas) {
         "start": setup
     };
 }
-
 
